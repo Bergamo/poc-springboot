@@ -1,19 +1,26 @@
 version: '2'
+
+volumes:  
+  data-mongo:
+    external:
+      name: spring-boot-restful-data-mongo
+
 services:
   web:
     image: rest-api
     ports:
       - 8080
+    links:
+     - db
     networks:
       - front-tier
       - back-tier
 
-  redis:
-    image: redis
-    links:
-      - web
-    networks:
-      - back-tier
+  db:
+    image: mongo
+    container_name: db
+    volumes:
+      - data-mongo:/data/db
 
   lb:
     image: dockercloud/haproxy
