@@ -1,5 +1,5 @@
 version: '2'
-
+  
 services:
     mongodata:
         image: mongo:3.2
@@ -14,8 +14,8 @@ services:
             - mongodata
         ports:
             - "27017"
-    web:	
-      image: rest-api
+    web:
+        image: rest-api
         depends_on: 
             - mongo
         environment:
@@ -24,22 +24,16 @@ services:
             - "8080"
         links:
             - mongo
-      		
-
-	  lb:
-	    image: dockercloud/haproxy
-	    ports:
-	      - 80:80
-	    links:
-	      - web
-	    networks:
+    lb:
+        image: dockercloud/haproxy
+        depends_on: 
+            - web
+        links:
+            - web
+		networks:
 	      - front-tier
 	      - back-tier
-	    volumes:
-	      - /var/run/docker.sock:/var/run/docker.sock 
-
-	networks:
-	  front-tier:
-	    driver: bridge
-	  back-tier:
-	    driver: bridge
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        ports:
+            - 80:80
