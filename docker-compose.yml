@@ -15,7 +15,7 @@ services:
         ports:
             - "27017"
     web:
-        image: rest-api
+        image: api-rest
         depends_on: 
             - mongo
         environment:
