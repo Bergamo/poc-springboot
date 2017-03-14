@@ -1,41 +1,45 @@
 version: '2'
 
-volumes:  
-  data-mongo:
-    external:
-      name: spring-boot-restful-data-mongo
-
 services:
-  web:
-    image: rest-api
-    ports:
-      - 8080
-    links:
-     - db
-    networks:
-      - front-tier
-      - back-tier
+    mongodata:
+        image: mongo:3.2
+        volumes:
+        - /data/db
+        entrypoint: /bin/bash
+    mongo:
+        image: mongo:3.2
+        depends_on: 
+            - mongodata
+        volumes_from:
+            - mongodata
+        ports:
+            - "27017"
+    web:	
+      image: rest-api
+        depends_on: 
+            - mongo
+        environment:
+            - MONGODB_DB_NAME=estabelecimentos
+        ports:
+            - "8080"
+        links:
+            - mongo
+      		
 
-  db:
-    image: mongo
-    container_name: db
-    volumes:
-      - data-mongo:/data/db
+	  lb:
+	    image: dockercloud/haproxy
+	    ports:
+	      - 80:80
+	    links:
+	      - web
+	    networks:
+	      - front-tier
+	      - back-tier
+	    volumes:
+	      - /var/run/docker.sock:/var/run/docker.sock 
 
-  lb:
-    image: dockercloud/haproxy
-    ports:
-      - 80:80
-    links:
-      - web
-    networks:
-      - front-tier
-      - back-tier
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock 
-
-networks:
-  front-tier:
-    driver: bridge
-  back-tier:
-    driver: bridge
+	networks:
+	  front-tier:
+	    driver: bridge
+	  back-tier:
+	    driver: bridge
